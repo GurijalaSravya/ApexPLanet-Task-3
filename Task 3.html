@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚫ Interactive Quiz ⚫</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0; /* Light text */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: #1e1e1e; /* Darker container */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        h1 {
+            color: #bb86fc; /* Accent color */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .question h2 {
+            color: #e0e0e0;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin-bottom: 10px;
+        }
+
+        .option-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #303030;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .option-button:hover {
+            background-color: #424242;
+        }
+
+        .option-button.correct {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        .option-button.incorrect {
+            background-color: #f44336;
+            color: #fff;
+        }
+
+        #next-button {
+            background-color: #bb86fc; /* Accent color */
+            color: #121212;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
+            display: none; /* Initially hidden */
+            width: 100%;
+        }
+
+        #next-button:hover {
+            background-color: #9c6efc;
+        }
+
+        #results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            display: none; /* Initially hidden */
+        }
+
+        #results h2 {
+            color: #bb86fc;
+            margin-bottom: 15px;
+        }
+
+        #results p {
+            margin-bottom: 10px;
+        }
+
+        #restart-button {
+            background-color: #00bcd4;
+            color: #121212;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        #restart-button:hover {
+            background-color: #00acc1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .quiz-container {
+                width: 95%;
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2em;
+                margin-bottom: 20px;
+            }
+
+            .question h2 {
+                font-size: 1.3em;
+                margin-bottom: 10px;
+            }
+
+            .option-button {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+
+            #next-button {
+                padding: 12px 25px;
+                font-size: 1em;
+            }
+
+            #results {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>🧠 Quiz Time! 🧠</h1>
+        <div id="quiz">
+            </div>
+        <button id="next-button">Next Question</button>
+        <div id="results">
+            <h2>Quiz Completed!</h2>
+            <p id="score"></p>
+            <button id="restart-button">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const quizContainer = document.getElementById('quiz');
+        const nextButton = document.getElementById('next-button');
+        const resultsContainer = document.getElementById('results');
+        const scoreDisplay = document.getElementById('score');
+        const restartButton = document.getElementById('restart-button');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [
+            {
+                question: "What is the capital of France?",
+                options: ["Berlin", "Madrid", "Paris", "Rome"],
+                correctAnswer: "Paris"
+            },
+            {
+                question: "Which planet is known as the 'Red Planet'?",
+                options: ["Mars", "Jupiter", "Venus", "Saturn"],
+                correctAnswer: "Mars"
+            },
+            {
+                question: "What is the chemical symbol for water?",
+                options: ["Wa", "H2O", "Ox", "Hy"],
+                correctAnswer: "H2O"
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+                correctAnswer: "Leonardo da Vinci"
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["African Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+                correctAnswer: "Blue Whale"
+            }
+        ];
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            quizContainer.innerHTML = ''; // Clear previous question
+
+            const questionDiv = document.createElement('div');
+            questionDiv.classList.add('question');
+
+            const questionTitle = document.createElement('h2');
+            questionTitle.textContent = currentQuestion.question;
+            questionDiv.appendChild(questionTitle);
+
+            const optionsList = document.createElement('ul');
+            optionsList.classList.add('options-list');
+
+            currentQuestion.options.forEach(option => {
+                const listItem = document.createElement('li');
+                const optionButton = document.createElement('button');
+                optionButton.classList.add('option-button');
+                optionButton.textContent = option;
+                optionButton.addEventListener('click', () => checkAnswer(option));
+                listItem.appendChild(optionButton);
+                optionsList.appendChild(listItem);
+            });
+
+            questionDiv.appendChild(optionsList);
+            quizContainer.appendChild(questionDiv);
+
+            nextButton.style.display = 'none'; // Hide next button until an answer is selected
+        }
+
+        function checkAnswer(selectedOption) {
+            const currentQuestion = questions[currentQuestionIndex];
+            const optionButtons = quizContainer.querySelectorAll('.option-button');
+
+            optionButtons.forEach(button => {
+                button.disabled = true; // Disable all buttons after an answer is selected
+                if (button.textContent === currentQuestion.correctAnswer) {
+                    button.classList.add('correct');
+                }
+                if (button.textContent === selectedOption && selectedOption !== currentQuestion.correctAnswer) {
+                    button.classList.add('incorrect');
+                }
+            });
+
+            if (selectedOption === currentQuestion.correctAnswer) {
+                score++;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                nextButton.style.display = 'block';
+            } else {
+                showResults();
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            nextButton.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            scoreDisplay.textContent = `You scored ${score} out of ${questions.length}!`;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizContainer.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            loadQuestion();
+        }
+
+        // Event listeners
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', restartQuiz);
+
+        // Load the first question when the page loads
+        loadQuestion();
+    </script>
+</body>
+</html>
